@@ -93,10 +93,12 @@ int IO::Pollkey() {
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-            case SDL_KEYDOWN:
+            case SDL_KEYDOWN: {
                 return event.key.keysym.sym;
-            case SDL_QUIT:
+            }
+            case SDL_QUIT: {
                 exit(3);
+            }
         }
     }
 
