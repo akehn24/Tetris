@@ -1,4 +1,4 @@
-
+#include "Game.h"
 
 
 
@@ -9,6 +9,24 @@
 * ------------------------------------------------------------------*
 */
 
+
+
+/*
+* =========================================================================
+* Initializes the Game
+* =========================================================================
+*/
+Game::Game(Board* pBoard, Pieces* pPieces, IO* pIO, int pScreenHeight) {
+	mScreenHeight = pScreenHeight;
+
+	// get pointer to Board and Piece classes
+	mBoard = pBoard;
+	mPieces = pPieces;
+	mIO = pIO;
+
+	// game initialization
+	InitGame();
+}
 
 /*
 * =========================================================================
@@ -21,16 +39,30 @@
 * =========================================================================
 */
 int Game::GetRand(int pA, int pB) {
-	return 0;
+	return rand() % (pB - pA + 1) + pA;
 }
 
 /*
 * =========================================================================
-* The initial parameters of the game to be made.
+* The initial parameters of the game to be made. Selects the active and 
+* upcoming pieces randomly. 
 * =========================================================================
 */
 void Game::InitGame() {
+	// grab random numbers
+	srand((unsigned int)time(NULL));
 
+	// active piece
+	mPiece = GetRand(0, 6);
+	mRotation = GetRand(0, 3);
+	mPosX = (BOARD_WIDTH / 2) + mPieces->GetXInitPosition(mPiece, mRotation);
+	mPosY = mPieces->GetYInitPosition(mPiece, mRotation);
+
+	// upcoming piece
+	mPiece = GetRand(0, 6);
+	mRotation = GetRand(0, 3);
+	mPosX = (BOARD_WIDTH + 5;
+	mPosY = 5;
 }
 
 /*
@@ -39,8 +71,16 @@ void Game::InitGame() {
 * upcoming piece.
 * =========================================================================
 */
-void CreateNewPiece() {
+void Game::CreateNewPiece() {
+	// setting upcoming as active
+	mPiece = mNextPiece;
+	mRotation = mNextRotation;
+	mPosX = (BOARD_WIDTH / 2) + mPieces->GetXInitPosition(mPiece, mRotation);
+	mPosY = mPieces->GetYInitPosition(mPiece, mRotation);
 
+	// getting new upcoming piece
+	mNextPiece = GetRand(0, 6);
+	mNextRotation = GetRand(0, 3);
 }
 
 /*
@@ -60,6 +100,31 @@ void CreateNewPiece() {
 * =========================================================================
 */
 void Game::DrawPiece(int pX, int pY, int pPiece, int pRotation) {
+	//piece color
+	color mColor;
+
+	// get position (pixels) of the block to draw
+	int mPixelsX = mBoard->GetXPosInPix(pX);
+	int mPixelsY = mBoard->GetYPosInPix(pY);
+
+	// iterate through the matrix and draw filled blocks
+	for (int i = 0; i < PIECE_BLOCKS; i++) {
+		for (int j = 0; j < PIECE_BLOCKS; j++) {
+			// get type of block and draw in correct color
+			switch (mPieces->GetBlockType(pPiece, pRotation, j, i)) {
+			case 1: mColor = GREEN; break;	// every block except pivot
+			case 2: mColor = BLUE; break;	// pivot block
+			}
+
+			if (mPieces->GetBlockType(pPiece, pRotation, j, i) != 0) {
+				mIO->DrawRect(mPixelsX + i * BLOCK_SIZE,
+							  mPixelsY + j * BLOCK_SIZE,
+							 (mPixelsX + i * BLOCK_SIZE) + BLOCK_SIZE - 1,
+							 (mPixelsX + j * BLOCK_SIZE) + BLOCK_SIZE - 1,
+							  mColor);
+			}
+		}
+	}
 
 }
 
@@ -69,6 +134,35 @@ void Game::DrawPiece(int pX, int pY, int pPiece, int pRotation) {
 * =========================================================================
 */
 void Game::DrawBoard() {
+	// limits of the board in pixels
+	int mX1 = BOARD_POSITION - (BLOCK_SIZE * (BOARD_WIDTH / 2)) - 1;
+	int mX2 = BOARD_POSITION + (BLOCK_SIZE * (BOARD_WIDTH / 2));
+	int mY	= mScreenHeight  - (BLOCK_SIZE * BOARD_HEIGHT);
+
+	// check vertical margin
+	assert(mY > MIN_VERTICAL_MARGIN);
+
+	// rectangles that delimit the board
+	mIO->DrawRect(mX1 - BOARD_LINE_WIDTH, mY, mX1, mScreenHeight - 1, BLUE);
+	mIO->DrawRect(mX2, mY, mX2 + BOARD_LINE_WIDTH, mScreenHeight - 1, BLUE);
+
+	// check horizontal margin
+	assert(mX1 > MIN_HORIZONTAL_MARGIN);
+
+	// drawing the blocks in the board
+	mx1 += 1;
+	for (int i = 0; i < BOARD_WIDTH; i++) {
+		for (int j = 0; j < BOARD_HEIGHT; j++) {
+			// if block is filled, draw it
+			if (!mBoard->IsFreeBlock(i, j)) {
+				mIO->DrawRect(mX1 + i * BLOCK_SIZE,
+							  mY + j * BLOCK_SIZE,
+							 (mX1 + i * BLOCK_SIZE) + BLOCK_SIZE - 1,
+							 (mY + j * BLOCK_SIZE) + BLOCK_SIZE - 1,
+							  RED);
+			}
+		}
+	}
 
 }
 
@@ -77,6 +171,8 @@ void Game::DrawBoard() {
 * Draws the entire game by calling the above methods.
 * =========================================================================
 */
-void DrawScene() {
-
+void Game::DrawScene() {
+	DrawBoard();
+	DrawPiece(mPosX, mPosY, mPiece, mRotation);
+	DrawPiece(mNextPosX, mNextPosY, mNextPiece, mNextRotation);
 }

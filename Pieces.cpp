@@ -1,4 +1,4 @@
-
+#include "Pieces.h"
 
 
 
@@ -332,7 +332,7 @@ int Pieces::GetBlockType(int pPiece, int pRotation, int pX, int pY) {
 * >> pRotation:			1 of 4 possible rotations
 * =========================================================================
 */
-int GetXInitPostition(int pPiece, int pRotation) {
+int Pieces::GetXInitPostition(int pPiece, int pRotation) {
 	return mPiecesInitPosition[pPiece][pRotation];
 }
 
@@ -347,6 +347,6 @@ int GetXInitPostition(int pPiece, int pRotation) {
 * >> pRotation:			1 of 4 possible rotations
 * =========================================================================
 */
-int GetYInitPosition(int pPiece, int pRotation) {
-
+int Pieces::GetYInitPosition(int pPiece, int pRotation) {
+	return mPiecesInitPosition[pPiece][pRotation][1];
 }
